@@ -2,66 +2,74 @@
 import {ref} from "vue";
 import Label from "./components/Label.vue";
 import SelectField from "./components/SelectField.vue";
+import {longOptions, moodOptions} from "./data/options.js";
+import {useOpenAI} from "./composables/useOpenAI";
+import LoadingIndicator from "./components/LoadingIndicator.vue";
+import {useLoading} from "./composables/useLoading";
 
 const form = ref({
   who: '',
+  from: '',
   mood: '',
   long: ''
 });
 
-const longOptions = [
-  {value: 'short', text: 'Kort'},
-  {value: 'medium', text: 'Mellem'},
-  {value: 'long', text: 'Lang'}
-]
+const initalHeadline = "Hjælp til talen";
 
-const moodOptions = [
-  {
-    value: 'happy',
-    text: 'Glad'
-  },
-  {
-    value: 'sad',
-    text: 'Trist'
-  },
-  {
-    value: 'angry',
-    text: 'Vred'
-  },
-  {
-    value: 'confused',
-    text: 'Forvirret'
-  },
-  {
-    value: 'bored',
-    text: 'Træt'
-  },
-  {
-    value: 'funny',
-    text: 'Sjov'
-  },
-  {
-    value: 'serious',
-    text: 'Alvorlig'
-  }
-]
+const headline = ref(initalHeadline);
 
-const handleSubmit = () => {
-  let text = `Write a speach to ${form.value.who}. The length should be ${form.value.long} and the mood should be ${form.value.mood}.`;
-  alert(text);
+const stages = [
+    "Starter robotten...",
+    "Udarbejder...",
+    "Henter data...",
+    "Næsten færdig..."
+];
+
+const generateHeadlineWhileLoading = () => {
+  let indexesUsed = [];
+  let i = 0;
+
+
+  return setInterval(() => {
+    if(stages.length > i) {
+      if(result.value === "Færdig!") {
+        clearInterval(interval);
+      }
+      headline.value = stages[i];
+      i++;
+    }
+  }, 2000);
+}
+
+const result = ref('');
+const {loading, setLoading} = useLoading();
+
+const handleSubmit = async () => {
+  const headlinesLoading = generateHeadlineWhileLoading();
+  result.value = "";
+  setLoading(true);
+  let text = `Write a speach to ${form.value.who}. The length should be ${form.value.long} and the mood should be ${form.value.mood}. The speach is from ${form.value.from}. Write it in danish.`;
+  result.value = await useOpenAI(text);
+  clearInterval(headlinesLoading);
+  headline.value = "Færdig!";
+  setLoading(false);
 }
 
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+  <div class="min-h-screen py-12 flex items-center justify-center bg-gray-900 text-white">
     <div class="max-w-sm">
-      <h1 class="text-center text-6xl font-semibold mb-12">Hjælp til talen</h1>
-      <form @submit.prevent="handleSubmit">
+      <h1 class="text-center text-6xl font-semibold mb-12" v-text="headline"></h1>
+      <form @submit.prevent="handleSubmit" v-if="!result && !loading">
         <div class="flex flex-wrap space-y-4 items-end">
           <div class="w-full">
             <Label for="navn">Hvem er talen til?</Label>
             <input type="text" id="navn" class="h-10 text-gray-800 w-full" placeholder="Skriv navn..." v-model="form.who">
+          </div>
+          <div class="w-full">
+            <Label for="from">Hvem er talen fra?</Label>
+            <input type="text" id="from" class="h-10 text-gray-800 w-full" placeholder="Skriv navn..." v-model="form.from">
           </div>
           <div class="w-full">
             <Label for="mood">Hvilket humør skal talen være i?</Label>
@@ -84,6 +92,8 @@ const handleSubmit = () => {
           <button class="bg-blue-500 h-10 text-white font-semibold px-8 mt-8 w-full" type="submit">Skriv udkast</button>
         </div>
       </form>
+      <LoadingIndicator :loading="loading" />
+      <p v-html="result" v-if="result" class="mt-12"></p>
     </div>
   </div>
 </template>
