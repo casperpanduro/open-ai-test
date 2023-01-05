@@ -6,6 +6,7 @@ import {longOptions, moodOptions, occasionOptions} from "./data/options.js";
 import LoadingIndicator from "./components/LoadingIndicator.vue";
 import {useLoading} from "./composables/useLoading";
 import {useHeadlinesLoading} from "./composables/useHeadlinesLoading";
+import {useOpenAI} from "./composables/useOpenAI";
 
 const form = ref({
   who: '',
@@ -25,15 +26,12 @@ const handleSubmit = async () => {
   result.value = "";
   setLoading(true);
   let text = `Write a speach to ${form.value.who}. The occasion is a ${form.value.occasion}. The length should be ${form.value.long} and the mood should be ${form.value.mood}. The speach is from ${form.value.from}. Write it in danish.`;
-  setTimeout(() => {
-    result.value = text;
-    clearInterval(headlinesLoading);
-    headline.value = "Færdig!";
-    setLoading(false);
-  }, 5000);
 
+  result.value = await useOpenAI(text);
+  clearInterval(headlinesLoading);
+  headline.value = "Færdig!";
+  setLoading(false);
 }
-
 </script>
 
 <template>
