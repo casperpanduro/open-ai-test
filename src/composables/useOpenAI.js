@@ -7,15 +7,28 @@ export const useOpenAI = async (text) => {
 
     const openai = new OpenAIApi(configuration);
 
-    const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: text,
-        temperature: 0.3,
-        max_tokens: 150,
-        top_p: 1.0,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0,
-    });
+    // Simulate error and return it
+    try {
+        const response = await openai.createCompletion({
+            model: "text-davinci-003",
+            prompt: text,
+            temperature: 0.3,
+            max_tokens: 600,
+            top_p: 1.0,
+            frequency_penalty: 0.0,
+            presence_penalty: 0.0,
+        });
 
-    return response.data.choices[0].text;
+        return response.data.choices[0].text;
+    }
+    catch (error) {
+        throw error;
+    }
+
+
+
+
+
+
+
 }

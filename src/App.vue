@@ -20,6 +20,7 @@ const {headline, loadingHeadlines} = useHeadlinesLoading("Hjælp til talen");
 
 const result = ref('');
 const {loading, setLoading} = useLoading();
+const error = ref('');
 
 const handleSubmit = async () => {
   const headlinesLoading = loadingHeadlines();
@@ -27,10 +28,19 @@ const handleSubmit = async () => {
   setLoading(true);
   let text = `Write a speach to ${form.value.who}. The occasion is a ${form.value.occasion}. The length should be ${form.value.long} and the mood should be ${form.value.mood}. The speach is from ${form.value.from}. Write it in danish.`;
 
-  result.value = await useOpenAI(text);
-  clearInterval(headlinesLoading);
-  headline.value = "Færdig!";
-  setLoading(false);
+  await useOpenAI(text).then((res) => {
+    error.value = "";
+    setLoading(false);
+    result.value = res;
+  }).catch((err) => {
+    console.log(err);
+    error.value = "Der skete en fejl. Prøv igen senere.";
+  }).finally(() => {
+    clearInterval(headlinesLoading);
+    headline.value = "Færdig!";
+    setLoading(false);
+  });
+
 }
 </script>
 
@@ -80,6 +90,7 @@ const handleSubmit = async () => {
       </form>
       <LoadingIndicator :loading="loading" />
       <p v-html="result" v-if="result" class="mt-12"></p>
+      <p v-html="error" v-if="error" class="mt-12 text-center"></p>
     </div>
   </div>
 </template>
