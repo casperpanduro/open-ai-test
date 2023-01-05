@@ -5,6 +5,8 @@ export const useOpenAI = async (text) => {
         apiKey: import.meta.env.VITE_OPEN_AI_KEY
     });
 
+    console.log(import.meta.env);
+
     const openai = new OpenAIApi(configuration);
 
     const response = await openai.createCompletion({
