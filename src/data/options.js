@@ -4,6 +4,12 @@ export const longOptions = [
     {value: 'long', text: 'Lang'}
 ];
 
+export const occasionOptions = [
+    {value: 'wedding', text: 'Bryllup'},
+    {value: 'party', text: 'Fest'},
+    {value: 'birthday', text: 'Fødselsdagsfest'},
+]
+
 export const moodOptions = [
     {
         value: 'happy',

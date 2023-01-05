@@ -2,57 +2,36 @@
 import {ref} from "vue";
 import Label from "./components/Label.vue";
 import SelectField from "./components/SelectField.vue";
-import {longOptions, moodOptions} from "./data/options.js";
-import {useOpenAI} from "./composables/useOpenAI";
+import {longOptions, moodOptions, occasionOptions} from "./data/options.js";
 import LoadingIndicator from "./components/LoadingIndicator.vue";
 import {useLoading} from "./composables/useLoading";
+import {useHeadlinesLoading} from "./composables/useHeadlinesLoading";
 
 const form = ref({
   who: '',
   from: '',
   mood: '',
+  occasion: '',
   long: ''
 });
 
-const initalHeadline = "Hjælp til talen";
-
-const headline = ref(initalHeadline);
-
-const stages = [
-    "Starter robotten...",
-    "Udarbejder...",
-    "Henter data...",
-    "Næsten færdig..."
-];
-
-const generateHeadlineWhileLoading = () => {
-  let indexesUsed = [];
-  let i = 0;
-
-
-  return setInterval(() => {
-    if(stages.length > i) {
-      if(result.value === "Færdig!") {
-        clearInterval(interval);
-      }
-      headline.value = stages[i];
-      i++;
-    }
-  }, 2000);
-}
+const {headline, loadingHeadlines} = useHeadlinesLoading("Hjælp til talen");
 
 const result = ref('');
 const {loading, setLoading} = useLoading();
 
 const handleSubmit = async () => {
-  const headlinesLoading = generateHeadlineWhileLoading();
+  const headlinesLoading = loadingHeadlines();
   result.value = "";
   setLoading(true);
-  let text = `Write a speach to ${form.value.who}. The length should be ${form.value.long} and the mood should be ${form.value.mood}. The speach is from ${form.value.from}. Write it in danish.`;
-  result.value = await useOpenAI(text);
-  clearInterval(headlinesLoading);
-  headline.value = "Færdig!";
-  setLoading(false);
+  let text = `Write a speach to ${form.value.who}. The occasion is a ${form.value.occasion}. The length should be ${form.value.long} and the mood should be ${form.value.mood}. The speach is from ${form.value.from}. Write it in danish.`;
+  setTimeout(() => {
+    result.value = text;
+    clearInterval(headlinesLoading);
+    headline.value = "Færdig!";
+    setLoading(false);
+  }, 5000);
+
 }
 
 </script>
@@ -70,6 +49,15 @@ const handleSubmit = async () => {
           <div class="w-full">
             <Label for="from">Hvem er talen fra?</Label>
             <input type="text" id="from" class="h-10 text-gray-800 w-full" placeholder="Skriv navn..." v-model="form.from">
+          </div>
+          <div class="w-full">
+            <Label for="mood">I hvilken anledning?</Label>
+            <SelectField
+                :value="form.occasion"
+                @update:value="form.occasion = $event"
+                default-value="Vælg anledning..."
+                :options="occasionOptions"
+            />
           </div>
           <div class="w-full">
             <Label for="mood">Hvilket humør skal talen være i?</Label>
