@@ -36,8 +36,8 @@ const handleSubmit = async () => {
 
 <template>
   <div class="min-h-screen py-12 flex items-center justify-center bg-gray-900 text-white">
-    <div class="max-w-sm">
-      <h1 class="text-center text-6xl font-semibold mb-12" v-text="headline"></h1>
+    <div class="max-w-sm lg:max-w-md px-4">
+      <h1 class="text-center text-3xl md:text-6xl font-semibold mb-12" v-text="headline"></h1>
       <form @submit.prevent="handleSubmit" v-if="!result && !loading">
         <div class="flex flex-wrap space-y-4 items-end">
           <div class="w-full">
